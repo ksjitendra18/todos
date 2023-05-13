@@ -54,7 +54,7 @@ top-0 right-0 left-0 bottom-0
 		$modalIsVisible ? 'block' : 'hidden'
 	} w-[100%] h-[100%] z-10 flex items-center justify-between fixed bg-[rgba(0,0,0,0.30)] inset-0 transition-all duration-1000`}
 >
-	<div class="content w-[50%] mx-auto bg-white opacity-100 px-5 py-4 rounded-xl relative">
+	<div class="content md:w-[50%] mx-auto bg-white opacity-100 px-5 py-4 rounded-xl relative">
 		<div
 			class="absolute right-0 pr-5 cursor-pointer hover:scale-95 duration-75 ease-in transition-all"
 			on:click={() => ($modalIsVisible = false)}
