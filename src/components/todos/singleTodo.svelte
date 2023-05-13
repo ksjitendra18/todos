@@ -6,7 +6,9 @@
 	import X from '../icons/x.svelte';
 	import { db } from '../../utils/firebase';
 	import Revert from '../icons/revert.svelte';
-
+	import Modal from '../modal.svelte';
+	import { modalIsVisible } from '../../store/modalStore';
+	import { todoData, todoId } from '../../store/todoUpdateStore';
 	interface Todo {
 		id: string;
 		createdAt: string;
@@ -30,11 +32,24 @@
 		fetchTodos();
 	};
 	const handleUndo = async (todoId: string) => {
-		const docRef = doc(db, userId!, todoId);
-		await updateDoc(docRef, {
-			isCompleted: false
-		});
-		fetchTodos();
+		try {
+			const docRef = doc(db, userId!, todoId);
+			await updateDoc(docRef, {
+				isCompleted: false
+			});
+		} catch (err) {
+			throw new Error('Error while updating!');
+		}
+
+		await fetchTodos();
+	};
+
+	const handleEdit = async (todoId: string, todo: string) => {
+		try {
+			$modalIsVisible = true;
+			$todoId = todoId;
+			$todoData = todo;
+		} catch (error) {}
 	};
 </script>
 
@@ -54,7 +69,9 @@
 			<div on:click={() => handleComplete(id)}>
 				<Check style={'cursor-pointer'} />
 			</div>
-			<Edit style={'cursor-pointer'} />
+			<div on:click={() => handleEdit(id, todo.todo)}>
+				<Edit style={'cursor-pointer'} />
+			</div>
 		{/if}
 
 		<div on:click={() => handleDelete(id)}>

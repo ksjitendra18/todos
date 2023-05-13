@@ -3,8 +3,6 @@
 	import { userId, isCheckingAuthStatus } from '../store/authStore';
 	import { auth } from '../utils/firebase';
 	let navIsOpen = false;
-
-	$: console.log($isCheckingAuthStatus, $userId);
 </script>
 
 <header class=" h-[80px] z-10 text-white bg-mainbg relative md:p-9 p-4">

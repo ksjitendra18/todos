@@ -11,7 +11,7 @@
 		getDocs,
 		onSnapshot
 	} from 'firebase/firestore';
-	import { getDoc } from 'firebase/firestore';
+
 	import { userId, isCheckingAuthStatus } from '../../store/authStore';
 	import { db } from '../../utils/firebase';
 	import { nanoid } from 'nanoid';
@@ -27,13 +27,15 @@
 	}
 
 	import { writable } from 'svelte/store';
+	import { onDestroy } from 'svelte';
+	import Modal from '../../components/modal.svelte';
 
 	let todosArray: any[] = [];
 	let completedTodosArray: any[] = [];
 
 	let loading = true;
 
-	const fetchTodos = async () => {
+	const fetchTodos = () => {
 		console.log('fetch called', new Date().getTime());
 		const q = query(collection(db, $userId!), orderBy('createdAt', 'desc'));
 
@@ -45,9 +47,8 @@
 				todosArray.push({ ...doc.data(), id: doc.id, createdAt: '' });
 				todosArray = todosArray;
 			});
+			loading = false;
 		});
-
-		loading = false;
 	};
 
 	let addTodos = false;
@@ -60,22 +61,17 @@
 		goto('/login');
 	}
 
-	$: console.log('user', $userId, $isCheckingAuthStatus);
-
-	// let completedTodosArray: any[] = [];
-
 	$: {
-		console.log('mapping...');
 		completedTodosArray = [];
 		todosArray.map((todo) => (todo.isCompleted ? completedTodosArray.push(todo) : ''));
 	}
-
-	$: console.log('array', todosArray, completedTodosArray);
 </script>
 
 <svelte:head>
 	<title>Todos</title>
 </svelte:head>
+
+<Modal />
 
 <div class="flex flex-col md:flex-row gap-3 items-center">
 	<h2 class="font-bold text-3xl">Your Todos</h2>
@@ -97,13 +93,11 @@
 {/if}
 
 {#if loading}
-	<div class="h-50vh w-full flex flex-col items-center justify-center">
+	<div class="h-50vh w-full flex flex-col items-center justify-center mt-20">
 		<div class="sr-only">Loding todos...</div>
-		<Loader style={'animate-spin mr-1'} />
+		<Loader style={'animate-spin mr-1 '} width={'40'} height={'40'} />
 	</div>
-{/if}
-
-{#if !loading && todosArray.length > 0}
+{:else if todosArray.length > 0}
 	<div class="flex mt-5 gap-5 flex-col">
 		{#if todosArray.length !== completedTodosArray.length}
 			<h3 class="text-2xl font-medium">Active Todos</h3>
@@ -128,3 +122,29 @@
 		Start adding your todos! It will appear here.
 	</div>
 {/if}
+
+<!-- {#if !loading || todosArray.length > 0}
+	<div class="flex mt-5 gap-5 flex-col">
+		{#if todosArray.length !== completedTodosArray.length}
+			<h3 class="text-2xl font-medium">Active Todos</h3>
+			{#each todosArray as todo}
+				{#if !todo.isCompleted}
+					<SingleTodo {todo} userId={$userId} {fetchTodos} />
+				{/if}
+			{/each}
+		{/if}
+
+		{#if completedTodosArray.length > 0}
+			<h3 class="text-2xl font-medium">Completed Todos</h3>
+			{#each completedTodosArray as todo}
+				{#if todo.isCompleted}
+					<SingleTodo {todo} userId={$userId} {fetchTodos} />
+				{/if}
+			{/each}
+		{/if}
+	</div>
+{:else}
+	<div class="text-2xl font-medium text-center mt-20">
+		Start adding your todos! It will appear here.
+	</div>
+{/if} -->

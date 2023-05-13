@@ -1,4 +1,5 @@
 <script lang="ts">
+	// export let fetchTodos: () => void;
 	import { Timestamp, doc, setDoc } from 'firebase/firestore';
 	import { userId, isCheckingAuthStatus } from '../../store/authStore';
 	import { db } from '../../utils/firebase';
@@ -16,8 +17,8 @@
 				isCompleted: false,
 				createdAt: Timestamp.now()
 			});
-
 			todoVal = '';
+			// fetchTodos();
 		} catch (err) {
 			console.log('Error', err);
 		}
