@@ -17,10 +17,9 @@
 	}
 
 	import Modal from '../../components/modal.svelte';
-	import { writable } from 'svelte/store';
 
 	let todosArray: Todo[] = [];
-	const allTodos = writable<Todo[]>([]);
+
 	let completedTodosArray: Todo[] = [];
 
 	let loading = true;
@@ -29,15 +28,13 @@
 		if (!$userId) {
 			return;
 		}
-		console.log('fetch called', new Date().getTime());
+
 		const q = query(collection(db, $userId), orderBy('createdAt', 'desc'));
 
 		onSnapshot(q, (querySnapshot) => {
 			todosArray = [];
-			// completedTodosArray = [];
 			querySnapshot.forEach((doc) => {
-				// console.log({...doc.data()});
-				todosArray.push({ ...doc.data(), id: doc.id });
+				todosArray.push({ ...(doc.data() as Omit<Todo, 'id'>), id: doc.id });
 				todosArray = todosArray;
 			});
 			loading = false;
@@ -103,9 +100,9 @@
 
 		{#if completedTodosArray.length > 0}
 			<h3 class="text-2xl font-medium">Completed Todos</h3>
-			{#each completedTodosArray as todo}
+			{#each completedTodosArray as todo (todo.id)}
 				{#if todo.isCompleted}
-					<SingleTodo {todo} userId={$userId} {fetchTodos} />
+					<SingleTodo {todo} userId={$userId ?? ''} />
 				{/if}
 			{/each}
 		{/if}

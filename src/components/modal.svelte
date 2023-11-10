@@ -1,66 +1,85 @@
 <script lang="ts">
-	import { Timestamp, doc, updateDoc } from 'firebase/firestore';
-	import { modalIsVisible } from '../store/modalStore';
-	import { todoData, todoId } from '../store/todoUpdateStore';
-	import X from './icons/x.svelte';
-	import { db } from '../utils/firebase';
+	import { browser } from '$app/environment';
+	import { doc, updateDoc } from 'firebase/firestore';
+	import { onDestroy, onMount } from 'svelte';
 	import { userId } from '../store/authStore';
+	import { modalIsVisible } from '../store/modalStore';
+	import { editTodoId, todoData } from '../store/todoUpdateStore';
+	import { db } from '../utils/firebase';
+	import X from './icons/x.svelte';
+	import { goto } from '$app/navigation';
 
-	// export let isActive = true;
-
-	// let todoVal = $todoData || '';
 	let todoVal: string;
 	$: todoVal = $todoData || '';
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
-		const docRef = await doc(db, $userId!, $todoId);
+
+		if (!$userId) {
+			return goto('/login');
+		}
+		const docRef = doc(db, $userId, $editTodoId);
 		await updateDoc(docRef, {
 			todo: todoVal
 		});
-		// createdAt: Timestamp.now()
 
 		$modalIsVisible = false;
 	}
 
-	function handleClick() {
-		console.log('click');
+	function handleClick(event: MouseEvent) {
+		if (
+			(event.target as HTMLElement).classList.contains('overlay') ||
+			!(event.target as HTMLElement).closest('.content')
+		) {
+			$modalIsVisible = false;
+		}
 	}
+
+	function handleKeyDown(event: KeyboardEvent) {
+		// Check if the "Escape" key is pressed
+		if (event.key === 'Escape') {
+			$modalIsVisible = false;
+		}
+	}
+
+	$: {
+		if (browser) {
+			if ($modalIsVisible) {
+				document.body.classList.add('overflow-hidden');
+			} else {
+				document.body.classList.remove('overflow-hidden');
+			}
+		}
+	}
+
+	onMount(() => {
+		document.addEventListener('keydown', handleKeyDown);
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			document.removeEventListener('keydown', handleKeyDown);
+		}
+	});
 </script>
 
-<!-- <div
-	on:keypress={handleClick}
-	on:click={handleClick}
-	class={`${$modalIsVisible ? 'block' : 'hidden'}
-    overlay
-	w-[100%]
-	h-[100%]
-	flex
-	items-center
-	justify-between
-	fixed
-	bg-[rgba(0,0,0,0.9)]
-top-0 right-0 left-0 bottom-0
-	transition-all
-	duration-1000`}
-/> -->
-
-<!-- <div
-	class={` ${
-		$modalIsVisible ? 'block' : 'hidden'
-	} modal  flex items-center justify-between  fixed inset-0 `}
-> -->
 <div
+	aria-hidden={$modalIsVisible ? undefined : 'true'}
+	role={$modalIsVisible ? 'dialog' : undefined}
+	aria-modal={$modalIsVisible ? 'true' : undefined}
+	on:click={handleClick}
 	class={`overlay ${
 		$modalIsVisible ? 'block' : 'hidden'
 	} w-[100%] h-[100%] z-10 flex items-center justify-between fixed bg-[rgba(0,0,0,0.30)] inset-0 transition-all duration-1000`}
 >
-	<div class="content md:w-[50%] mx-auto bg-white opacity-100 px-5 py-4 rounded-xl relative">
-		<div
+	<div
+		class="content md:w-[50%] w-full mx-4 md:mx-auto bg-white opacity-100 px-5 py-4 rounded-xl relative"
+	>
+		<button
 			class="absolute right-0 pr-5 cursor-pointer hover:scale-95 duration-75 ease-in transition-all"
 			on:click={() => ($modalIsVisible = false)}
 		>
 			<X />
-		</div>
+		</button>
 		<h2 class=" text-2xl font-medium">Edit Todo</h2>
 
 		<div class="model-body">
