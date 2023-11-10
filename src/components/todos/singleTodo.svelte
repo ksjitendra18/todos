@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 	import { modalIsVisible } from '../../store/modalStore';
-	import { todoData } from '../../store/todoUpdateStore';
+	import { todoData, editTodoId } from '../../store/todoUpdateStore';
 	import { db } from '../../utils/firebase';
 	import Check from '../icons/check.svelte';
 	import Delete from '../icons/delete.svelte';
 	import Edit from '../icons/edit.svelte';
 	import Revert from '../icons/revert.svelte';
+
 	interface Todo {
 		id: string;
 		createdAt: string;
@@ -30,7 +31,6 @@
 	};
 
 	const handleUndo = async (todoId: string) => {
-		console.log('handling undo', todoId);
 		const docRef = doc(db, userId, todoId);
 		await updateDoc(docRef, {
 			isCompleted: false
@@ -40,10 +40,10 @@
 	const handleEdit = async (todoId: string, todo: string) => {
 		try {
 			$modalIsVisible = true;
-
+			$editTodoId = todoId;
 			$todoData = todo;
 		} catch (error) {
-			console.log('error while editing');
+			throw new Error('Error while editing');
 		}
 	};
 </script>
