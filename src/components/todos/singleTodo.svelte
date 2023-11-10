@@ -53,7 +53,7 @@
 		isCompleted ? 'bg-green-800' : 'bg-mainbg '
 	} flex px-5 py-2 rounded-lg text-white justify-between items-center`}
 >
-	<p>{todo.todo} {todo.id}</p>
+	<p>{todo.todo}</p>
 
 	<div class="actions flex gap-5">
 		{#if isCompleted}
