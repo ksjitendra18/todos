@@ -17,27 +17,22 @@
 	}
 
 	import Modal from '../../components/modal.svelte';
-	import { writable } from 'svelte/store';
 
 	let todosArray: Todo[] = [];
-	const allTodos = writable<Todo[]>([]);
 	let completedTodosArray: Todo[] = [];
 
 	let loading = true;
 
 	const fetchTodos = () => {
-		if (!$userId) {
-			return;
-		}
 		console.log('fetch called', new Date().getTime());
-		const q = query(collection(db, $userId), orderBy('createdAt', 'desc'));
+		const q = query(collection(db, $userId!), orderBy('createdAt', 'desc'));
 
 		onSnapshot(q, (querySnapshot) => {
 			todosArray = [];
 			// completedTodosArray = [];
 			querySnapshot.forEach((doc) => {
 				// console.log({...doc.data()});
-				todosArray.push({ ...doc.data(), id: doc.id });
+				todosArray.push({ ...doc.data(), id: doc.id, createdAt: '' });
 				todosArray = todosArray;
 			});
 			loading = false;
@@ -94,9 +89,9 @@
 	<div class="flex mt-5 gap-5 flex-col">
 		{#if todosArray.length !== completedTodosArray.length}
 			<h3 class="text-2xl font-medium">Active Todos</h3>
-			{#each todosArray as todo (todo.id)}
+			{#each todosArray as todo}
 				{#if !todo.isCompleted}
-					<SingleTodo {todo} userId={$userId ?? ''} />
+					<SingleTodo {todo} userId={$userId} {fetchTodos} />
 				{/if}
 			{/each}
 		{/if}
@@ -115,3 +110,29 @@
 		Start adding your todos! It will appear here.
 	</div>
 {/if}
+
+<!-- {#if !loading || todosArray.length > 0}
+	<div class="flex mt-5 gap-5 flex-col">
+		{#if todosArray.length !== completedTodosArray.length}
+			<h3 class="text-2xl font-medium">Active Todos</h3>
+			{#each todosArray as todo}
+				{#if !todo.isCompleted}
+					<SingleTodo {todo} userId={$userId} {fetchTodos} />
+				{/if}
+			{/each}
+		{/if}
+
+		{#if completedTodosArray.length > 0}
+			<h3 class="text-2xl font-medium">Completed Todos</h3>
+			{#each completedTodosArray as todo}
+				{#if todo.isCompleted}
+					<SingleTodo {todo} userId={$userId} {fetchTodos} />
+				{/if}
+			{/each}
+		{/if}
+	</div>
+{:else}
+	<div class="text-2xl font-medium text-center mt-20">
+		Start adding your todos! It will appear here.
+	</div>
+{/if} -->
